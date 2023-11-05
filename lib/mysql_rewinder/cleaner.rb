@@ -9,7 +9,11 @@ module MysqlRewinder
       @client = self.class
                     .client_class(adapter)
                     .new(db_config.transform_keys(&:to_sym))
-                    .tap { |c| c.execute('SET information_schema_stats_expiry = 0') }
+                    .tap do |c|
+        unless c.query("SHOW VARIABLES LIKE 'information_schema_stats_expiry'").to_a.empty? # For MySQL 5.7 compatibility
+          c.execute('SET information_schema_stats_expiry = 0')
+        end
+      end
       @databases = databases
       @except_tables = except_tables
       @delete_after = @client.query("SELECT CURRENT_TIMESTAMP()").first.first
