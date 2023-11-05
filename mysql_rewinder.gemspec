@@ -8,8 +8,7 @@ Gem::Specification.new do |spec|
   spec.authors = ["Yusuke Sangenya"]
   spec.email = ["longinus.eva@gmail.com"]
 
-  spec.summary = "aaa"
-  spec.description = "bbb"
+  spec.summary = "Simple, stable, and fast database cleaner for mysql"
   spec.homepage = "https://github.com/genya0407/mysql_rewinder"
   spec.license = "MIT"
   spec.required_ruby_version = ">= 3.0.0"
