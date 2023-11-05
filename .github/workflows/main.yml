@@ -12,6 +12,7 @@ jobs:
     runs-on: ubuntu-latest
     name: Ruby ${{ matrix.ruby }} / MySQL ${{ matrix.mysql }}
     strategy:
+      fail-fast: false
       matrix:
         ruby:
           - '3.0'
