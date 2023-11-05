@@ -1,0 +1,7 @@
+module MysqlRewinder
+  VERSION: String
+  # See the writing guide of rbs: https://github.com/ruby/rbs#guides
+  @cleaners: Array[Cleaner]
+  @except_tables: Array[String]
+  @started_at: TimeWithZone
+end
