@@ -1,27 +1,27 @@
 # MysqlRewinder
 
-MysqlRewinder is simple, stable, and fast database cleaner for mysql.
+MysqlRewinder is a simple, stable, and fast database cleaner for mysql.
 
-Heavily inspired by [database_rewinder](https://github.com/amatsuda/database_rewinder/tree/master).
+It is heavily inspired by [database_rewinder](https://github.com/amatsuda/database_rewinder/tree/master).
 
 ## Features
 
 * Fast cleanup using `DELETE` query
 * Supports multi-database
-* Supports both `mysql2` and `trilogy` as client library
+* Supports both `mysql2` and `trilogy` as a client library
 * Works without ActiveRecord
 * Works with `fork`
 
-## How dow it work?
+## How does it work?
 
-1. Record timestamp before running test case
+1. Record the timestamp before running the test case
 2. Inspect `INFORMATION_SCHEMA.TABLES.UPDATE_TIME` and find tables to `DELETE`
 3. Execute DELETE query
 
 ## What does `stable` mean?
 
 MysqlRewinder is stable because it does not depend on ActiveRecord's internal implementation.
-It only depends on MySQL's specification.
+It only depends on MySQL's specifications.
 
 ## Installation
 
@@ -78,7 +78,7 @@ MysqlRewinder.init(
 
 ### mysql2
 
-If you want to use `mysql2` as client library, do:
+If you want to use `mysql2` as a client library, do the following:
 
 * Write `gem 'mysql2'` in your `Gemfile`
 * Pass `adapter: :mysql2` to `MysqlRewinder.init`.
@@ -89,7 +89,7 @@ MysqlRewinder.init(db_configs, adapter: :mysql2)
 
 ### ActiveRecord
 
-If you want use MysqlRewinder with ActiveRecord, do:
+If you want to use MysqlRewinder with ActiveRecord, do the following:
 
 * Generate db_configs from `ActiveRecord::Base.configurations`
 * Pass `ActiveRecord::SchemaMigration.new(nil).table_name` and `ActiveRecord::Base.internal_metadata_table_name` to `DatabaseRewinder.init` as `except_tables`
