@@ -82,31 +82,81 @@ module MysqlRewinder
 
     class TrilogyAdapter
       def initialize(db_config)
-        @client = Trilogy.new(db_config.merge(multi_statement: true))
+        @db_config = db_config
+        connect
       end
 
       def query(sql)
-        @client.query(sql).to_a
+        with_reconnect do
+          @client.query(sql).to_a
+        end
       end
 
       def execute(sql)
-        @client.query(sql)
-        @client.next_result while @client.more_results_exist?
+        with_reconnect do
+          @client.query(sql)
+          @client.next_result while @client.more_results_exist?
+        end
+      end
+
+      private
+      def with_reconnect(&block)
+        retry_count = 0
+        begin
+          block.call
+        rescue Trilogy::Error => e
+          raise e if retry_count > 3
+
+          connect
+          retry_count += 1
+
+          retry
+        end
+      end
+
+      def connect
+        @client&.close
+        @client = Trilogy.new(@db_config.merge(multi_statement: true))
       end
     end
 
     class Mysql2Adapter
       def initialize(db_config)
-        @client = Mysql2::Client.new(db_config.merge(connect_flags: Mysql2::Client::MULTI_STATEMENTS))
+        @db_config = db_config
+        connect
       end
 
       def query(sql)
-        @client.query(sql, as: :array).to_a
+        with_reconnect do
+          @client.query(sql, as: :array).to_a
+        end
       end
 
       def execute(sql)
-        @client.query(sql)
-        @client.store_result while @client.next_result
+        with_reconnect do
+          @client.query(sql)
+          @client.store_result while @client.next_result
+        end
+      end
+
+      private
+      def with_reconnect(&block)
+        retry_count = 0
+        begin
+          block.call
+        rescue Mysql2::Error => e
+          raise e if retry_count > 3
+
+          connect
+          retry_count += 1
+
+          retry
+        end
+      end
+
+      def connect
+        @client&.close
+        @client = Mysql2::Client.new(@db_config.merge(connect_flags: Mysql2::Client::MULTI_STATEMENTS))
       end
     end
   end
