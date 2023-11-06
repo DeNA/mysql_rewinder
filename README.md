@@ -14,8 +14,8 @@ It is heavily inspired by [database_rewinder](https://github.com/amatsuda/databa
 
 ## How does it work?
 
-1. Capture sql statements and record `INSERT`ed tables into tmp files
-2. Execute DELETE query for recorded tables
+1. Capture SQL statements and extract `INSERT`ed table names, and record them into tmp files
+2. Aggregate tmp files and execute DELETE query for `INSERT`ed tables
 
 ## What does `stable` mean?
 
