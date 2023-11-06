@@ -53,7 +53,7 @@ module MysqlRewinder
       @all_tables ||= @client.query(<<~SQL).map { |db_name, table_name| "#{db_name}.#{table_name}" }
         SELECT TABLE_SCHEMA, TABLE_NAME
         FROM INFORMATION_SCHEMA.TABLES
-        WHERE TABLE_SCHEMA IN (#{@databases.map { |d| '"' + d + '"'}})
+        WHERE TABLE_SCHEMA IN (#{@databases.map { |d| '"' + d + '"'}.join(',')})
       SQL
     end
 
