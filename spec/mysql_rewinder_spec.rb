@@ -1,8 +1,12 @@
 RSpec.describe MysqlRewinder do
-  %i[trilogy mysql2].each do |adapter|
+  %i[mysql2 trilogy].each do |adapter|
     describe "adapter: #{adapter}" do
-      let(:root_db_config) { { host: '127.0.0.1', port: '3306', username: 'root' } }
-      let(:root_client) { Trilogy.new(root_db_config) }
+      let(:root_db_config) { { host: '127.0.0.1', port: '3306', username: 'root', database: 'mysql' } }
+      let(:client_class) { { mysql2: Mysql2::Client, trilogy: Trilogy }[adapter] }
+
+      def root_client
+        client_class.new(root_db_config)
+      end
 
       context 'when initialized with multiple configs' do
         let(:db_configs) do
@@ -46,13 +50,8 @@ RSpec.describe MysqlRewinder do
           SQL
         end
 
-        it 'initializes Cleaner for user1/user2' do
-          cleaners = MysqlRewinder.cleaners.sort_by { |c| c.db_config[:username] }
-
-          expect(cleaners[0].db_config[:username]).to eq 'database_rewinder_test_user1'
-          expect(cleaners[0].databases.sort).to eq %w[database_rewinder_test_a]
-          expect(cleaners[1].db_config[:username]).to eq 'database_rewinder_test_user2'
-          expect(cleaners[1].databases.sort).to eq %w[database_rewinder_test_b database_rewinder_test_c].sort
+        it 'initializes Cleaner for all db_configs' do
+          expect(MysqlRewinder.cleaners.size).to eq db_configs.size
         end
 
         it 'removes records using appropriate config' do
@@ -85,13 +84,16 @@ RSpec.describe MysqlRewinder do
                 id INT NOT NULL AUTO_INCREMENT,
                 name VARCHAR(128) NOT NULL,
                 PRIMARY KEY (id)
-            )
-            PARTITION BY HASH( id )
-            PARTITIONS 6;
+            ) PARTITION BY HASH( id ) PARTITIONS 6;
+            CREATE TABLE database_rewinder_test.hohho (
+                id INT NOT NULL AUTO_INCREMENT,
+                name VARCHAR(128) NOT NULL,
+                PRIMARY KEY (id)
+            );
     
             DROP DATABASE IF EXISTS database_rewinder_test_2;
             CREATE DATABASE database_rewinder_test_2;
-            CREATE TABLE database_rewinder_test_2.foo (
+            CREATE TABLE database_rewinder_test_2.foo_2 (
                 id INT NOT NULL AUTO_INCREMENT,
                 name VARCHAR(128) NOT NULL,
                 PRIMARY KEY (id)
@@ -101,7 +103,6 @@ RSpec.describe MysqlRewinder do
           root_client.query(<<~SQL)
             INSERT INTO database_rewinder_test.foo (name) VALUES ("hitori")
           SQL
-          sleep 2
 
           MysqlRewinder.init([root_db_config.merge(database: 'database_rewinder_test')], adapter: adapter, except_tables: [])
 
@@ -114,8 +115,15 @@ RSpec.describe MysqlRewinder do
           SQL
 
           root_client.query(<<~SQL)
-            INSERT INTO database_rewinder_test_2.foo (name) VALUES ("nijika")
+            INSERT INTO database_rewinder_test_2.foo_2 (name) VALUES ("nijika")
           SQL
+
+          pid = fork do
+            client_class.new(root_db_config).query(<<~SQL)
+            INSERT INTO database_rewinder_test.hohho (name) VALUES ("ryo")
+            SQL
+          end
+          Process.waitpid(pid)
         end
 
         it 'removes records inserted after init' do
@@ -136,9 +144,16 @@ RSpec.describe MysqlRewinder do
           }.from(1).to(0)
         end
 
+
+        it 'removes records inserted in child process' do
+          expect { MysqlRewinder.clean }.to change {
+            root_client.query('SELECT * FROM database_rewinder_test.hohho').to_a.size
+          }.from(1).to(0)
+        end
+
         it 'does not remove records in other database' do
           expect { MysqlRewinder.clean }.not_to change {
-            root_client.query('SELECT * FROM database_rewinder_test_2.foo').to_a.size
+            root_client.query('SELECT * FROM database_rewinder_test_2.foo_2').to_a.size
           }.from(1)
         end
       end

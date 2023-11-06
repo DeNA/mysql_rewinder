@@ -1,59 +1,29 @@
 module MysqlRewinder
   class Cleaner
-    attr_reader :databases, :db_config
+    attr_reader :db_config
 
-    def initialize(db_config, databases:, except_tables:, adapter:)
-      raise ArgumentError, 'databases cannot be empty' if databases.empty?
-
+    def initialize(db_config, except_tables:, adapter:)
       @db_config = db_config
-      @client = self.class
-                    .client_class(adapter)
-                    .new(db_config.transform_keys(&:to_sym))
-                    .tap do |c|
-        unless c.query("SHOW VARIABLES LIKE 'information_schema_stats_expiry'").to_a.empty? # For MySQL 5.7 compatibility
-          c.execute('SET information_schema_stats_expiry = 0')
-        end
-      end
-      @databases = databases
+      @client = self.class.client_class(adapter).new(db_config.transform_keys(&:to_sym))
       @except_tables = except_tables
-      @delete_after = @client.query("SELECT CURRENT_TIMESTAMP()").first.first
     end
 
     def clean_all
-      delete_tables(tables: all_tables)
+      clean(tables: all_tables)
     end
 
-    def clean
-      # UPDATE_TIME in INFORMATION_SCHEMA.TABLES is not updated if it is partitioned.
-      # So we also use UPDATE_TIME in INFORMATION_SCHEMA.PARTITIONS.
-      tables = @client.query(<<~SQL).map { |db_name, table_name| "#{db_name}.#{table_name}" }
-        SELECT TABLE_SCHEMA, TABLE_NAME
-          FROM INFORMATION_SCHEMA.TABLES
-          WHERE TABLE_SCHEMA IN (#{@databases.map { |d| '"' + d + '"'}.join(',')})
-          AND UPDATE_TIME >= "#{@delete_after.strftime('%Y-%m-%d %H:%M:%S')}"
+    def clean(tables:)
+      target_tables = (tables - @except_tables) & all_tables
+      return if target_tables.empty?
 
-        UNION
-
-        (SELECT TABLE_SCHEMA, TABLE_NAME
-          FROM INFORMATION_SCHEMA.PARTITIONS
-          WHERE TABLE_SCHEMA IN (#{@databases.map { |d| '"' + d + '"'}.join(',')})
-          AND UPDATE_TIME >= "#{@delete_after.strftime('%Y-%m-%d %H:%M:%S')}")
-      SQL
-      delete_tables(tables: tables)
-    end
-
-    def delete_tables(tables:)
-      return if tables.empty?
-
-      @client.execute(tables.map { |table| "DELETE FROM #{table}" }.join(';'))
-      @delete_after = @client.query("SELECT CURRENT_TIME()").first.first
+      @client.execute(target_tables.map { |table| "DELETE FROM #{table}" }.join(';'))
     end
 
     def all_tables
-      @all_tables ||= @client.query(<<~SQL).map { |db_name, table_name| "#{db_name}.#{table_name}" }
-        SELECT TABLE_SCHEMA, TABLE_NAME
+      @all_tables ||= @client.query(<<~SQL).flatten
+        SELECT TABLE_NAME
         FROM INFORMATION_SCHEMA.TABLES
-        WHERE TABLE_SCHEMA IN (#{@databases.map { |d| '"' + d + '"'}.join(',')})
+        WHERE TABLE_SCHEMA = DATABASE()
       SQL
     end
 
@@ -70,12 +40,14 @@ module MysqlRewinder
 
     def self.trilogy_client
       require 'trilogy'
+      require_relative 'ext/trilogy'
 
       TrilogyAdapter
     end
 
     def self.mysql2_client
       require 'mysql2'
+      require_relative 'ext/mysql2_client'
 
       Mysql2Adapter
     end
