@@ -14,14 +14,13 @@ It is heavily inspired by [database_rewinder](https://github.com/amatsuda/databa
 
 ## How does it work?
 
-1. Record the timestamp before running the test case
-2. Inspect `INFORMATION_SCHEMA.TABLES.UPDATE_TIME` and find tables to `DELETE`
-3. Execute DELETE query
+1. Capture sql statements and record `INSERT`ed tables into tmp files
+2. Execute DELETE query for recorded tables
 
 ## What does `stable` mean?
 
 MysqlRewinder is stable because it does not depend on ActiveRecord's internal implementation.
-It only depends on MySQL's specifications.
+It only depends on `Mysql2::Client#query` and `Trilogy#query`.
 
 ## Installation
 
