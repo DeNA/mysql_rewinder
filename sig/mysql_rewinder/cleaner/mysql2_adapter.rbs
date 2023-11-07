@@ -1,0 +1,13 @@
+class MysqlRewinder
+  class Cleaner
+    class Mysql2Adapter < Adapter
+      @db_config: Hash[Symbol,String]
+      @client: Mysql2::Client
+
+      private
+
+      def with_reconnect: [T] () { () -> T } -> T
+      def connect: () -> void
+    end
+  end
+end

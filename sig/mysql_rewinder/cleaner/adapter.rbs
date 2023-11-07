@@ -1,0 +1,10 @@
+class MysqlRewinder
+  class Cleaner
+    class Adapter
+      def self.generate: (Symbol adapter, Hash[Symbol,String] db_config) -> Adapter
+      def initialize: (Hash[Symbol,String] db_config) -> untyped
+      def query: (String sql) -> Array[Array[Object]]
+      def execute: (String sql) -> void
+    end
+  end
+end

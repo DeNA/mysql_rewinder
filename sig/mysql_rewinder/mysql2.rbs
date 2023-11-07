@@ -1,0 +1,16 @@
+class Mysql2
+  class Result < Enumerator[Array[Object], void]
+  end
+  class Error < StandardError
+  end
+
+  class Client
+    MULTI_STATEMENTS: Integer
+
+    def initialize: (Hash[Symbol, Object] config) -> untyped
+    def close: () -> void
+    def next_result: () -> bool
+    def store_result: () -> Array[Object]
+    def query: (String sql, ?Hash[Symbol, Object] _options) -> Array[Array[Object]]
+  end
+end

@@ -1,0 +1,13 @@
+class MysqlRewinder
+  class Cleaner
+    class TrilogyAdapter < Adapter
+      @db_config: Hash[Symbol,String]
+      @client: ::Trilogy
+
+      private
+
+      def with_reconnect: [T] () { () -> T } -> T
+      def connect: () -> void
+    end
+  end
+end

@@ -1,0 +1,12 @@
+class Trilogy
+  class Result < Enumerator[Array[Object], void]
+  end
+  class Error < StandardError
+  end
+
+  def initialize: (Hash[Symbol,Object] config) -> untyped
+  def close: () -> void
+  def more_results_exist?: () -> bool
+  def next_result: () -> Array[Object]
+  def query: (String sql) -> Array[Array[Object]]
+end
