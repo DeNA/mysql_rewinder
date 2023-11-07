@@ -50,7 +50,7 @@ RSpec.configure do |config|
       password: 'my_secure_password',
       database: 'myapp-test'
     }
-    MysqlRewinder.init([db_config])
+    MysqlRewinder.setup([db_config])
     MysqlRewinder.clean_all
   end
 
@@ -62,10 +62,10 @@ end
 
 ### Multi-database
 
-Pass all configurations to `MysqlRewinder.init`.
+Pass all configurations to `MysqlRewinder.setup`.
 
 ```ruby
-MysqlRewinder.init(
+MysqlRewinder.setup(
   [
     { host: '127.0.0.1', port: '3306', username: 'user1', password: 'my_secure_password', database: 'myapp-test-shard1' },
     { host: '127.0.0.1', port: '3306', username: 'user1', password: 'my_secure_password', database: 'myapp-test-shard2' },
@@ -78,10 +78,10 @@ MysqlRewinder.init(
 If you want to use `mysql2` as a client library, do the following:
 
 * Write `gem 'mysql2'` in your `Gemfile`
-* Pass `adapter: :mysql2` to `MysqlRewinder.init`.
+* Pass `adapter: :mysql2` to `MysqlRewinder.setup`.
 
 ```ruby
-MysqlRewinder.init(db_configs, adapter: :mysql2)
+MysqlRewinder.setup(db_configs, adapter: :mysql2)
 ```
 
 ### ActiveRecord
@@ -89,7 +89,7 @@ MysqlRewinder.init(db_configs, adapter: :mysql2)
 If you want to use MysqlRewinder with ActiveRecord, do the following:
 
 * Generate db_configs from `ActiveRecord::Base.configurations`
-* Pass `ActiveRecord::SchemaMigration.new(nil).table_name` and `ActiveRecord::Base.internal_metadata_table_name` to `DatabaseRewinder.init` as `except_tables`
+* Pass `ActiveRecord::SchemaMigration.new(nil).table_name` and `ActiveRecord::Base.internal_metadata_table_name` to `DatabaseRewinder.setup` as `except_tables`
 
 ```ruby
 db_configs = ActiveRecord::Base.configurations.configs_for(env_name: 'test').map(&:configuration_hash)
@@ -102,7 +102,7 @@ except_tables = [
   # ActiveRecord::SchemaMigration.table_name,
 ]
 
-MysqlRewinder.init(db_configs, except_tables: except_tables)
+MysqlRewinder.setup(db_configs, except_tables: except_tables)
 ```
 
 ## License

@@ -41,17 +41,13 @@ RSpec.describe MysqlRewinder do
             GRANT ALL ON database_rewinder_test_c.* TO database_rewinder_test_user2;
           SQL
 
-          MysqlRewinder.init(db_configs, adapter: adapter, except_tables: [])
+          MysqlRewinder.setup(db_configs, adapter: adapter, except_tables: [])
 
           <<~SQL.split(';').map(&:strip).reject(&:empty?).each { |sql| root_client.query(sql) }
             INSERT INTO database_rewinder_test_a.hoge (price) VALUES (108);
             INSERT INTO database_rewinder_test_b.hoge (price) VALUES (108);
             INSERT INTO database_rewinder_test_c.hoge (price) VALUES (108);
           SQL
-        end
-
-        it 'initializes Cleaner for all db_configs' do
-          expect(MysqlRewinder.cleaners.size).to eq db_configs.size
         end
 
         it 'removes records using appropriate config' do
@@ -104,7 +100,7 @@ RSpec.describe MysqlRewinder do
             INSERT INTO database_rewinder_test.foo (name) VALUES ("hitori")
           SQL
 
-          MysqlRewinder.init([root_db_config.merge(database: 'database_rewinder_test')], adapter: adapter, except_tables: [])
+          MysqlRewinder.setup([root_db_config.merge(database: 'database_rewinder_test')], adapter: adapter, except_tables: [])
 
           root_client.query(<<~SQL)
             INSERT INTO database_rewinder_test.bar (age) VALUES (15)

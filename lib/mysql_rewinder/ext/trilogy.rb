@@ -1,6 +1,6 @@
 require 'trilogy'
 
-module MysqlRewinder
+class MysqlRewinder
   module Ext
     module Trilogy
       def query(sql)

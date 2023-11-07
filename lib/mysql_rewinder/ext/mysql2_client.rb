@@ -1,6 +1,6 @@
 require 'mysql2'
 
-module MysqlRewinder
+class MysqlRewinder
   module Ext
     module Mysql2Client
       def query(sql, _options = {})

@@ -1,4 +1,4 @@
-module MysqlRewinder
+class MysqlRewinder
   class Cleaner
     attr_reader :db_config
 

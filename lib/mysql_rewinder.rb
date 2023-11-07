@@ -5,9 +5,19 @@ require_relative "mysql_rewinder/cleaner"
 require 'set'
 require 'tmpdir'
 require 'fileutils'
+require 'forwardable'
 
-module MysqlRewinder
-  def self.init(db_configs, except_tables: [], adapter: :trilogy)
+class MysqlRewinder
+  class << self
+    extend Forwardable
+    delegate %i[clean clean_all record_inserted_table] => :@instance
+
+    def setup(db_configs, except_tables: [], adapter: :trilogy)
+      @instance = new(db_configs: db_configs, except_tables: except_tables, adapter: adapter)
+    end
+  end
+
+  def initialize(db_configs:, except_tables:, adapter:)
     @initialized_pid = Process.pid
     @inserted_table_record_dir = Pathname(Dir.tmpdir)
     @cleaners = db_configs.map do |db_config|
@@ -20,7 +30,7 @@ module MysqlRewinder
     reset_inserted_tables
   end
 
-  def self.record_inserted_table(sql)
+  def record_inserted_table(sql)
     return unless @initialized_pid
 
     @inserted_tables ||= Set.new
@@ -37,7 +47,7 @@ module MysqlRewinder
     )
   end
 
-  def self.reset_inserted_tables
+  def reset_inserted_tables
     unless @initialized_pid == Process.pid
       raise "MysqlRewinder is initialize in process #{@initialized_pid}, but reset_inserted_tables is called in process #{Process.pid}"
     end
@@ -46,7 +56,7 @@ module MysqlRewinder
     FileUtils.rm(Dir.glob(@inserted_table_record_dir.join("#{@initialized_pid}.*.inserted_tables").to_s))
   end
 
-  def self.calculate_inserted_tables
+  def calculate_inserted_tables
     unless @initialized_pid == Process.pid
       raise "MysqlRewinder is initialize in process #{@initialized_pid}, but calculate_inserted_tables is called in process #{Process.pid}"
     end
@@ -56,18 +66,14 @@ module MysqlRewinder
     end.uniq
   end
 
-  def self.clean_all
-    cleaners.each(&:clean_all)
+  def clean_all
+    @cleaners.each(&:clean_all)
     reset_inserted_tables
   end
 
-  def self.clean
+  def clean
     aggregated_inserted_tables = calculate_inserted_tables
-    cleaners.each { |c| c.clean(tables: aggregated_inserted_tables) }
+    @cleaners.each { |c| c.clean(tables: aggregated_inserted_tables) }
     reset_inserted_tables
-  end
-
-  def self.cleaners
-    @cleaners
   end
 end
