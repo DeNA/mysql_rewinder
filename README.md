@@ -2,8 +2,6 @@
 
 MysqlRewinder is a simple, stable, and fast database cleaner for mysql.
 
-It is heavily inspired by [database_rewinder](https://github.com/amatsuda/database_rewinder/tree/master).
-
 ## Features
 
 * Fast cleanup using `DELETE` query
@@ -14,7 +12,7 @@ It is heavily inspired by [database_rewinder](https://github.com/amatsuda/databa
 
 ## How does it work?
 
-1. Capture SQL statements and extract `INSERT`ed table names, and record them into tmp files
+1. Capture SQL statements during test execution and extract `INSERT`ed table names, and record them into temporary files
 2. Aggregate tmp files and execute DELETE query for `INSERT`ed tables
 
 ## What does `stable` mean?
@@ -107,12 +105,11 @@ except_tables = [
 MysqlRewinder.init(db_configs, except_tables: except_tables)
 ```
 
-## Development
-
-After checking out the repo, run `bin/setup` to install dependencies. Then, run `rake spec` to run the tests. You can also run `bin/console` for an interactive prompt that will allow you to experiment.
-
-To install this gem onto your local machine, run `bundle exec rake install`. To release a new version, update the version number in `version.rb`, and then run `bundle exec rake release`, which will create a git tag for the version, push git commits and the created tag, and push the `.gem` file to [rubygems.org](https://rubygems.org).
-
 ## License
 
 The gem is available as open source under the terms of the [MIT License](https://opensource.org/licenses/MIT).
+
+## Special Thanks
+
+* Thank you [@aeroastro](https://github.com/aeroastro) for the idea of using temporary files
+* This gem is heavily inspired by [amatsuda/database_rewinder](https://github.com/amatsuda/database_rewinder).
