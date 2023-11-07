@@ -1,0 +1,7 @@
+class MysqlRewinder
+  module Ext
+    module Mysql2Client
+      def query: (String sql, ?::Hash[Symbol, Object] _options) -> ::Mysql2::Result
+    end
+  end
+end

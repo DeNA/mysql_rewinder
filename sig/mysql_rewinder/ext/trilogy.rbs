@@ -1,0 +1,7 @@
+class MysqlRewinder
+  module Ext
+    module Trilogy
+      def query: (String sql) -> ::Trilogy::Result
+    end
+  end
+end

@@ -1,0 +1,15 @@
+class MysqlRewinder
+  class Cleaner
+    @db_config: Hash[Symbol,String]
+    @client: Adapter
+    @except_tables: Array[String]
+    @all_tables: Array[String]
+
+    attr_reader db_config: Hash[Symbol,String]
+
+    def initialize: (Hash[Symbol,String] db_config, except_tables: Array[String], adapter: Symbol) -> untyped
+    def clean_all: () -> void
+    def clean: (tables: untyped) -> void
+    def all_tables: () -> void
+  end
+end

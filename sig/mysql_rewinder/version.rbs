@@ -1,0 +1,3 @@
+class MysqlRewinder
+  VERSION: String
+end

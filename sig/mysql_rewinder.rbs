@@ -1,7 +1,20 @@
-module MysqlRewinder
-  VERSION: String
-  # See the writing guide of rbs: https://github.com/ruby/rbs#guides
+class MysqlRewinder
+  self.@instance: MysqlRewinder
+  @initialized_pid: Integer
+  @inserted_table_record_dir: Object
+  # @inserted_table_record_dir: Pathname
   @cleaners: Array[Cleaner]
-  @except_tables: Array[String]
-  @started_at: TimeWithZone
+  @inserted_tables: Set[String]
+
+  def self.setup: (Array[Hash[Symbol,String]] db_configs, ?except_tables: Array[String], ?adapter: ::Symbol) -> void
+  def self.clean_all: () -> void
+  def self.clean: () -> void
+  def self.record_inserted_table: (String sql) -> void
+
+  def initialize: (db_configs: Array[Hash[Symbol,String]], except_tables: Array[String], adapter: ::Symbol) -> untyped
+  def record_inserted_table: (String sql) -> void
+  def reset_inserted_tables: () -> void
+  def calculate_inserted_tables: () -> void
+  def clean_all: () -> void
+  def clean: () -> void
 end
