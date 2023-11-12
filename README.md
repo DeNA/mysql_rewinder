@@ -1,4 +1,4 @@
-# MysqlRewinder
+# MysqlRewinder ![test](https://github.com/github/docs/actions/workflows/test.yml/badge.svg) [![Gem Version](https://badge.fury.io/rb/mysql_rewinder.svg)](https://badge.fury.io/rb/mysql_rewinder)
 
 MysqlRewinder is a simple, stable, and fast database cleaner for mysql.
 
